@@ -1,0 +1,41 @@
+name: brew test-bot
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+env:
+  HOMEBREW_CHANGE_ARCH_TO_ARM: 1
+jobs:
+  test-bot:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-aarch64, macos-x86_64]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Install Homebrew Bundler RubyGems
+        run: brew install-bundler-gems
+
+      - run: brew test-bot --only-cleanup-before
+
+      - run: brew test-bot --only-setup
+
+      - run: brew test-bot --only-tap-syntax
+
+      # https://github.com/crosstool-ng/crosstool-ng/issues/1477#issuecomment-998361621
+      - run: brew install --HEAD crosstool-ng
+
+      - run: brew test-bot --only-formulae
+        if: github.event_name == 'pull_request'
+
+      - name: Upload bottles as artifact
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@main
+        with:
+          name: bottles
+          path: '*.bottle.*'
