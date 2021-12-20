@@ -11,9 +11,6 @@ class Toolchain < Formula
     CT_CC_GCC_BUILD_ID=y
     CT_CC_LANG_CXX=y
     CT_CONFIG_VERSION="3"
-    #TODO: remove
-    CT_DEBUG_CT=y
-    CT_DEBUG_CT_SAVE_STEPS=y
     CT_EXPERIMENTAL=y
     CT_FORBID_DOWNLOAD=y
     CT_GCC_V_11=y
@@ -137,6 +134,18 @@ class Toolchain < Formula
             system "ct-ng", "defconfig"
             system "ct-ng", "build"
           end
+
+          # Remove the few files that conflict on case-sensitive filesystems.
+          # This is suspect, but these are netlink headers that are perhaps not
+          # that commonly referenced. I think other cross-compiling toolchains
+          # on macOS just throw tar at the problem, which blindly chooses one
+          # of the casing options when untarring.
+          duplicates = Dir.glob("mnt/install/**/*")
+                          .group_by(&:lower)
+                          .values
+                          .filter { |paths| paths.len > 1 }
+                          .flatten
+          rm_rf duplicates
 
           cp_r "mnt/install/.", prefix
         end
