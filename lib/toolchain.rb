@@ -21,6 +21,7 @@ class Toolchain < Formula
     CT_GCC_V_11=y
     CT_GETTEXT_V_0_21=y
     CT_GLIBC_V_<%= glibc_version.gsub(".", "_") %>=y
+    # CT_GLIBC_ENABLE_OBSOLETE_RPC is not set
     CT_GMP_V_6_2=y
     CT_ISL_V_0_24=y
     CT_KERNEL_LINUX=y
@@ -97,10 +98,10 @@ class Toolchain < Formula
           url "https://ftp.gnu.org/pub/gnu/glibc/glibc-2.12.1.tar.xz"
           sha256 "9e633fb278b411a90636cc1c4bf1ffddcc8b0d214f5bacd74bfcdaac81d6035e"
         end
-      when "2.17"
+      when "2.26"
         resource "glibc" do
-          url "https://ftp.gnu.org/pub/gnu/glibc/glibc-2.17.tar.xz"
-          sha256 "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e"
+          url "https://ftp.gnu.org/pub/gnu/glibc/glibc-2.26.tar.xz"
+          sha256 "e54e0a934cd2bc94429be79da5e9385898d2306b9eaf3c92d5a77af96190f6bd"
         end
       else
         raise "unsupported glibc version #{glibc_version}"
@@ -192,10 +193,22 @@ class Toolchain < Formula
     rm duplicates
     chmod "-w", parents
 
+    chmod "+w", "mnt/install"
+    rm "mnt/install/build.log.bz2"
+
+    chmod_R "+w", "mnt/install/share"
+    rm_r "mnt/install/share"
+
+    chmod "+w", "mnt/install/lib"
+    chmod_R "+w", "mnt/install/lib/bfd-plugins"
+    rm_r "mnt/install/lib/bfd-plugins"
+    rm "mnt/install/lib/libcc1.so", "mnt/install/lib/libcc1.0.so"
+    chmod "-w", "mnt/install/lib"
+
     cp_r "mnt/install/.", prefix
   end
 
-  def test
+  test do
     (testpath/"test.c").write("int main() { return 0; }")
     system bin/"#{name}-cc", "test.c"
     test_signature shell_output("file a.out")
