@@ -76,6 +76,7 @@ class Toolchain < Formula
       depends_on "crosstool-ng" => :build
       depends_on "gawk" => :build
       depends_on "xz" => :build
+      depends_on "zstd"
 
       resource "binutils" do
         url "https://ftp.gnu.org/pub/gnu/binutils/binutils-2.37.tar.xz"
