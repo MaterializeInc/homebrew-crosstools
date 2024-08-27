@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-TAP_PATH = (Tap::TAP_DIRECTORY/"MaterializeInc"/"homebrew-crosstools").freeze
+TAP_PATH = (HOMEBREW_TAP_DIRECTORY/"MaterializeInc"/"homebrew-crosstools").freeze
 
 class Toolchain < Formula
   desc "Appease RuboCop; not used"
