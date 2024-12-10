@@ -8,48 +8,43 @@ class Toolchain < Formula
 
   DEFCONFIG = <<~EOF
     <%= defconfig %>
-    CT_BINUTILS_GOLD_THREADS=y
-    CT_BINUTILS_LD_WRAPPER=y
-    CT_BINUTILS_LINKER_LD_GOLD=y
-    CT_BINUTILS_PLUGINS=y
-    CT_BINUTILS_V_2_37=y
-    CT_CC_GCC_BUILD_ID=y
-    CT_CC_LANG_CXX=y
-    CT_CONFIG_VERSION="3"
-    CT_EXPERIMENTAL=y
-    CT_FORBID_DOWNLOAD=y
-    CT_GCC_V_11=y
-    CT_GETTEXT_V_0_21=y
-    CT_GLIBC_V_<%= glibc_version.gsub(".", "_") %>=y
-    # CT_GLIBC_ENABLE_OBSOLETE_RPC is not set
-    CT_GMP_V_6_2=y
-    CT_ISL_V_0_24=y
-    CT_KERNEL_LINUX=y
-    CT_LIBC_GLIBC=yCT_DEBUG_CT=y
-    CT_LIBICONV_V_1_16=y
-    CT_LINUX_V_<%= linux_version.gsub(".", "_") %>=y
     CT_LOCAL_TARBALLS_DIR="<%= buildpath %>/tarballs"
     CT_LOCAL_PATCH_DIR="<%= buildpath %>/patches"
     # CT_LOG_PROGRESS_BAR is not set
-    CT_MPC_V_1_2=y
-    CT_MPFR_V_4_1=y
-    CT_NCURSES_V_6_2=y
     CT_PATCH_BUNDLED_LOCAL=y
     CT_PREFIX_DIR="<%= buildpath %>/mnt/install"
     <% if Context.current.debug? %>
     CT_DEBUG_CT=y
     CT_DEBUG_CT_SAVE_STEPS=y
+    CT_CONFIG_VERSION="3"
+    CT_EXPERIMENTAL=y
+    CT_ALLOW_BUILD_AS_ROOT=y
+    CT_ALLOW_BUILD_AS_ROOT_SURE=y
+    # CT_SAVE_TARBALLS is not set
+    CT_PREFIX_DIR="${CT_PREFIX:-/opt/x-tools}/${CT_HOST:+HOST-${CT_HOST}/}${CT_TARGET}"
+    # CT_LOG_TO_FILE is not set
+    CT_ARCH_ARM=y
+    CT_ARCH_64=y
+    CT_KERNEL_LINUX=y
+    CT_LINUX_V_5_10=y
+    CT_BINUTILS_LINKER_LD_GOLD=y
+    CT_BINUTILS_GOLD_THREADS=y
+    CT_BINUTILS_LD_WRAPPER=y
+    CT_BINUTILS_PLUGINS=y
+    CT_CC_LANG_CXX=y
+    CT_LIBC_GLIBC=y
+    # CT_LOG_PROGRESS_BAR is not set
+    CT_GLIBC_V_2_35=y
+    # CT_COMP_TOOLS_AUTOCONF is not set
+    # CT_COMP_TOOLS_AUTOMAKE is not set
+    CT_CC_GCC_BUILD_ID=y
     <% end %>
   EOF
 
   delegate defconfig: :"self.class"
-  delegate glibc_version: :"self.class"
-  delegate linux_version: :"self.class"
 
   class << self
     attr_rw :defconfig
-    attr_rw :glibc_version
-    attr_rw :linux_version
 
     def inherited(formula)
       super
@@ -77,15 +72,16 @@ class Toolchain < Formula
       depends_on "gawk" => :build
       depends_on "xz" => :build
       depends_on "zstd"
+      depends_on "lld"
 
       resource "binutils" do
-        url "https://ftp.gnu.org/pub/gnu/binutils/binutils-2.37.tar.xz"
-        sha256 "820d9724f020a3e69cb337893a0b63c2db161dadcb0e06fc11dc29eb1e84a32c"
+        url "https://ftp.gnu.org/pub/gnu/binutils/binutils-2.40.tar.xz"
+        sha256 "0f8a4c272d7f17f369ded10a4aca28b8e304828e95526da482b0ccc4dfc9d8e1"
       end
 
       resource "gcc" do
-        url "https://ftp.gnu.org/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.xz"
-        sha256 "d08edc536b54c372a1010ff6619dd274c0f1603aa49212ba20f7aa2cda36fa8b"
+        url "https://ftp.gnu.org/gnu/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz"
+        sha256 "e275e76442a6067341a27f04c5c6b83d8613144004c0413528863dc6b5c743da"
       end
 
       resource "gettext" do
@@ -93,19 +89,9 @@ class Toolchain < Formula
         sha256 "d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192"
       end
 
-      case glibc_version
-      when "2.12.1"
-        resource "glibc" do
-          url "https://ftp.gnu.org/pub/gnu/glibc/glibc-2.12.1.tar.xz"
-          sha256 "9e633fb278b411a90636cc1c4bf1ffddcc8b0d214f5bacd74bfcdaac81d6035e"
-        end
-      when "2.26"
-        resource "glibc" do
-          url "https://ftp.gnu.org/pub/gnu/glibc/glibc-2.26.tar.xz"
-          sha256 "e54e0a934cd2bc94429be79da5e9385898d2306b9eaf3c92d5a77af96190f6bd"
-        end
-      else
-        raise "unsupported glibc version #{glibc_version}"
+      resource "glibc" do
+        url "https://ftp.gnu.org/pub/gnu/glibc/glibc-2.35.tar.xz"
+        sha256 "5123732f6b67ccd319305efd399971d58592122bcc2a6518a1bd2510dd0cf52e"
       end
 
       resource "gmp" do
@@ -114,8 +100,8 @@ class Toolchain < Formula
       end
 
       resource "isl" do
-        url "https://libisl.sourceforge.io/isl-0.24.tar.xz"
-        sha256 "043105cc544f416b48736fff8caf077fb0663a717d06b1113f16e391ac99ebad"
+        url "https://libisl.sourceforge.io/isl-0.26.tar.xz"
+        sha256 "a0b5cb06d24f9fa9e77b55fabbe9a3c94a336190345c2555f9915bb38e976504"
       end
 
       resource "libiconv" do
@@ -123,39 +109,34 @@ class Toolchain < Formula
         sha256 "e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04"
       end
 
-      case linux_version
-      when "2.6.32"
-        resource "linux" do
-          url "https://cdn.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-2.6.32.71.tar.xz"
-          sha256 "60a5ffe0206a0ea8997c29ccc595aa7dae55f6cb20c7d92aab88029ca4fef598"
-        end
-      when "3.10"
-        resource "linux" do
-          url "https://cdn.kernel.org/pub/linux/kernel/v3.x/linux-3.10.108.tar.xz"
-          sha256 "3849ea8119517f605f9d53c57dd6c539af8d584c2f1d9031f4f56283af3409a5"
-        end
-      else
-        raise "unsupported linux version #{linux_version}"
+      resource "linux" do
+        url "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.10.185.tar.xz"
+        sha256 "280662ec8dc8738cf947ad66e748141abd58cbe3b5ed66b7f2b153222b7c7090"
       end
 
       resource "mpc" do
-        url "https://www.multiprecision.org/downloads/mpc-1.2.0.tar.gz"
-        sha256 "e90f2d99553a9c19911abdb4305bf8217106a957e3994436428572c8dfe8fda6"
+        url "https://www.multiprecision.org/downloads/mpc-1.2.1.tar.gz"
+        sha256 "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"
       end
 
       resource "mpfr" do
-        url "https://www.mpfr.org/mpfr-4.1.0/mpfr-4.1.0.tar.xz"
-        sha256 "0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f"
+        url "https://www.mpfr.org/mpfr-4.2.1/mpfr-4.2.1.tar.xz"
+        sha256 "277807353a6726978996945af13e52829e3abd7a9a5b7fb2793894e18f1fcbb2"
       end
 
       resource "ncurses" do
-        url "https://invisible-mirror.net/archives/ncurses/ncurses-6.2.tar.gz"
-        sha256 "30306e0c76e0f9f1f0de987cf1c82a5c21e1ce6568b9227f7da5b71cbea86c9d"
+        url "https://invisible-mirror.net/archives/ncurses/ncurses-6.4.tar.gz"
+        sha256 "6931283d9ac87c5073f30b6290c4c75f21632bb4fc3603ac8100812bed248159"
       end
 
       resource "zlib" do
-        url "https://downloads.sourceforge.net/project/libpng/zlib/1.2.11/zlib-1.2.11.tar.xz"
-        sha256 "4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066"
+        url "https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.xz"
+        sha256 "d14c38e313afc35a9a8760dadf26042f51ea0f5d154b0630a31da0540107fb98"
+      end
+
+      resource "zstd" do
+        url "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz"
+        sha256 "9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4"
       end
     end
   end
@@ -205,6 +186,7 @@ class Toolchain < Formula
     rm_r "mnt/install/lib/bfd-plugins"
     rm ["mnt/install/lib/libcc1.so", "mnt/install/lib/libcc1.0.so"]
     chmod "-w", "mnt/install/lib"
+    ln_s prefix/"bin/lld", "mnt/install/bin/ld.lld"
 
     cp_r "mnt/install/.", prefix
   end
