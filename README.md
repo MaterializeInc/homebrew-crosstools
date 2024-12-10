@@ -17,8 +17,8 @@ brew install MaterializeInc/crosstools/<toolchain>
 
 Target                        | Binutils | GCC     | Kernel   | Glibc
 ------------------------------|----------|---------|----------|-------
-[`aarch64-unknown-linux-gnu`] | 2.37     | 11.2.0  | 3.10.108 | 2.26.0
-[`x86_64-unknown-linux-gnu`]  | 2.37     | 11.2.0  | 2.6.32   | 2.12.1
+[`aarch64-unknown-linux-gnu`] | 2.40     | 13.2.0  | 5.10.185 | 2.35
+[`x86_64-unknown-linux-gnu`]  | 2.40     | 13.2.0  | 5.10.185 | 2.35
 
 
 ## Contributing
