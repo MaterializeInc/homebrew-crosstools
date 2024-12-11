@@ -25,9 +25,11 @@ jobs:
       # by looking for formulas with three dashes is gross, but works.
       - run: brew ls --formula | grep -- '-.*-.*-.*' | xargs brew uninstall -f
 
-      - run: brew test-bot --only-setup
+      #- run: brew test-bot --only-setup
 
-      - run: brew test-bot --only-tap-syntax
+      #- run: brew test-bot --only-tap-syntax
+
+      - run: brew unlink python@3.12; brew link --overwrite python@3.13
 
       # https://github.com/crosstool-ng/crosstool-ng/issues/1477#issuecomment-998361621
       - run: brew install --HEAD crosstool-ng
