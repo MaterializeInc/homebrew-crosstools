@@ -27,6 +27,8 @@ jobs:
       # by looking for formulas with three dashes is gross, but works.
       - run: brew ls --formula | grep -- '-.*-.*-.*' | xargs brew uninstall -f
 
+      - run: brew cleanup
+
       - run: brew test-bot --only-setup
 
       - run: brew test-bot --only-tap-syntax
