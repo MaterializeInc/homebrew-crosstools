@@ -28,11 +28,11 @@ jobs:
 
       - run: brew uninstall -f openssl@1.1
 
-      - run: brew cleanup
-
       - name: Make sure homebrew-core is clean
         run: git clean -f -d
-        working-directory: /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core
+        working-directory: /usr/local/Homebrew/Library/Formula/o
+
+      - run: brew cleanup
 
       - run: brew test-bot --only-setup
 
