@@ -30,7 +30,7 @@ jobs:
 
       - name: Make sure homebrew-core is clean
         run: git clean -f -d
-        working-directory: /usr/local/Homebrew/Library/Formula/o
+        working-directory: /usr/local/Homebrew/Library
 
       - run: brew cleanup
 
