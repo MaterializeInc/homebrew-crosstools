@@ -26,11 +26,11 @@ jobs:
       # by looking for formulas with three dashes is gross, but works.
       - run: brew ls --formula | grep -- '-.*-.*-.*' | xargs brew uninstall -f
 
-      - run: brew uninstall -f openssl@1.1
+      - run: brew uninstall -f openssl@1.1 ruby@3.0
 
-      - run: brew cleanup -v -d
+      - run: brew cleanup
 
-      - run: brew test-bot --only-setup
+      - run: brew test-bot --only-setup -d
 
       - run: brew test-bot --only-tap-syntax
 
