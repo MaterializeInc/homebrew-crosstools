@@ -21,6 +21,8 @@ jobs:
       - name: Install Homebrew Bundler RubyGems
         run: brew install-bundler-gems
 
+      - run: brew uninstall -f openssl@1.1
+
       # Remove anything that looks like a toolchain formula. Detecting this
       # by looking for formulas with three dashes is gross, but works.
       - run: brew ls --formula | grep -- '-.*-.*-.*' | xargs brew uninstall -f
