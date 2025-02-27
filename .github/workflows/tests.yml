@@ -29,6 +29,10 @@ jobs:
       - run: brew uninstall -f openssl@1.1 ruby@3.0
 
       - run: brew cleanup
+      
+      - run: git status .
+
+      - run: git status /usr/local/Homebrew
 
       - run: brew test-bot --only-setup -d
 
