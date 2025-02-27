@@ -32,7 +32,8 @@ jobs:
       
       - run: git status .
 
-      - run: git status /usr/local/Homebrew
+      - run: git status .
+        working-directory: /usr/local/Homebrew
 
       - run: brew test-bot --only-setup -d
 
