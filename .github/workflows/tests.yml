@@ -28,11 +28,7 @@ jobs:
 
       - run: brew uninstall -f openssl@1.1
 
-      - name: Make sure homebrew-core is clean
-        run: git clean -f -d
-        working-directory: /usr/local/Homebrew/Library
-
-      - run: brew cleanup
+      - run: brew cleanup -v -d
 
       - run: brew test-bot --only-setup
 
