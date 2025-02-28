@@ -11,12 +11,47 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-aarch64, macos-x86_64]
+        # x86_64 and aarch64 respectively.
+        os: [macos-13, macos-14]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up Homebrew
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
+
+      # OpenSSL v1.1 is deprecated, and `brew doctor` complains about it in two
+      # different ways:
+      #
+      # 1. Some part of the `set-up-homebrew` action modifies the openssl1.1
+      #    Formula in the install homebrew-core repository that gets cloned and
+      #    then `brew doctor` complains about a non-clean repository.
+      # 2. Either as part of the default runner image, or again the
+      #    `set-up-homebrew` action, openssl@1.1 gets installed which is
+      #    deprecated and thus must also be uninstalled.
+
+      # 1. Cleanup the cloned homebrew-core repo to remove openssl@1.1 formulae.
+      - name: Get Homebrew Repo
+        run: |
+          MY_HOMEBREW_CORE_REPO="$(brew --repo)/Library/Taps/homebrew/homebrew-core"
+          echo "MY_HOMEBREW_CORE_REPO=$MY_HOMEBREW_CORE_REPO" >> "$GITHUB_ENV"
+
+      - name: Check Homebrew Repo
+        run: git status .
+        working-directory: ${{ env.MY_HOMEBREW_CORE_REPO }}
+
+      - name: Clean Homebrew Repo
+        run: git restore . ; git clean -fd
+        working-directory: ${{ env.MY_HOMEBREW_CORE_REPO }}
+
+      - name: Check Homebrew Repo - Post Clean
+        run: git status .
+        working-directory: ${{ env.MY_HOMEBREW_CORE_REPO }}
+
+      # 2. Cleanup the cloned homebrew-core repo to remove openssl@1.1 formulae.
+      - name: Uninstall openssl@1.1
+        run: brew uninstall openssl@1.1 ; brew cleanup
+
+      # END OpenSSL v1.1 cleanup.
 
       - name: Install Homebrew Bundler RubyGems
         run: brew install-bundler-gems
@@ -25,7 +60,7 @@ jobs:
       # by looking for formulas with three dashes is gross, but works.
       - run: brew ls --formula | grep -- '-.*-.*-.*' | xargs brew uninstall -f
 
-      - run: brew test-bot --only-setup
+      - run: brew test-bot --verbose --only-setup
 
       - run: brew test-bot --only-tap-syntax
 
@@ -40,4 +75,4 @@ jobs:
         uses: actions/upload-artifact@main
         with:
           name: bottles
-          path: '*.bottle.*'
+          path: "*.bottle.*"
