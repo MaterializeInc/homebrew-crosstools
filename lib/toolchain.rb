@@ -47,9 +47,20 @@ class Toolchain < Formula
   delegate linux_version: :"self.class"
 
   class << self
-    attr_rw :defconfig
-    attr_rw :glibc_version
-    attr_rw :linux_version
+    sig { params(val: String).returns(T.nilable(String)) }
+    def defconfig(val = T.unsafe(nil))
+      val.nil? ? @defconfig : @defconfig= T.let(val, T.nilable(String))
+    end
+
+    sig { params(val: String).returns(T.nilable(String)) }
+    def glibc_version(val = T.unsafe(nil))
+      val.nil? ? @glibc_version : @glibc_version= T.let(val, T.nilable(String))
+    end
+
+    sig { params(val: String).returns(T.nilable(String)) }
+    def linux_version(val = T.unsafe(nil))
+      val.nil? ? @linux_version : @linux_version= T.let(val, T.nilable(String))
+    end
 
     def inherited(formula)
       super
