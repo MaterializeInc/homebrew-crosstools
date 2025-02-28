@@ -49,13 +49,13 @@ jobs:
 
       # 2. Cleanup the cloned homebrew-core repo to remove openssl@1.1 formulae.
       - name: Uninstall openssl@1.1
-        run: brew uninstall openssl@1.1 ; brew cleanup
+        run: brew uninstall openssl@1.1 || true ; brew cleanup
 
       # END OpenSSL v1.1 cleanup.
 
       # We also need to cleanup ruby@3.0 which `brew doctor` also complains about.
       - name: Uninstall ruby@3.0
-        run: brew uninstall ruby@3.0 ; brew cleanup
+        run: brew uninstall ruby@3.0 || true ; brew cleanup
 
       - name: Install Homebrew Bundler RubyGems
         run: brew install-bundler-gems
