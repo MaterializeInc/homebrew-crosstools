@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         # x86_64 and aarch64 respectively.
-        os: [macos-13, macos-14]
+        os: [macos-14-large, macos-14]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up Homebrew
@@ -67,9 +67,6 @@ jobs:
       #- run: brew test-bot --verbose --only-setup
 
       #- run: brew test-bot --only-tap-syntax
-
-      - if: matrix.os == 'macos-13'
-        run: brew unlink python@3.12; brew link --overwrite python@3.13
 
       # https://github.com/crosstool-ng/crosstool-ng/issues/1477#issuecomment-998361621
       - run: brew install --HEAD crosstool-ng
