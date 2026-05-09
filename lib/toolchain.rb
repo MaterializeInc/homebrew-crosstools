@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-TAP_PATH = (HOMEBREW_TAP_DIRECTORY/"MaterializeInc"/"homebrew-crosstools").freeze
+TAP_PATH = Pathname.new(__dir__).parent.realpath.freeze
 
 class Toolchain < Formula
   desc "Appease RuboCop; not used"
@@ -8,58 +8,50 @@ class Toolchain < Formula
 
   DEFCONFIG = <<~EOF
     <%= defconfig %>
+    CT_ALLOW_BUILD_AS_ROOT=y
+    CT_ALLOW_BUILD_AS_ROOT_SURE=y
+    CT_ARCH_ARM=y
+    CT_ARCH_64=y
+    CT_BINUTILS_LINKER_LD_GOLD=y
     CT_BINUTILS_GOLD_THREADS=y
     CT_BINUTILS_LD_WRAPPER=y
-    CT_BINUTILS_LINKER_LD_GOLD=y
     CT_BINUTILS_PLUGINS=y
-    CT_BINUTILS_V_2_37=y
+    CT_BINUTILS_V_2_45=y
     CT_CC_GCC_BUILD_ID=y
     CT_CC_LANG_CXX=y
+    # CT_COMP_TOOLS_AUTOCONF is not set
+    # CT_COMP_TOOLS_AUTOMAKE is not set
     CT_CONFIG_VERSION="3"
-    CT_EXPERIMENTAL=y
-    CT_FORBID_DOWNLOAD=y
-    CT_GCC_V_11=y
-    CT_GETTEXT_V_0_21=y
-    CT_GLIBC_V_<%= glibc_version.gsub(".", "_") %>=y
-    # CT_GLIBC_ENABLE_OBSOLETE_RPC is not set
-    CT_GMP_V_6_2=y
-    CT_ISL_V_0_24=y
-    CT_KERNEL_LINUX=y
-    CT_LIBC_GLIBC=yCT_DEBUG_CT=y
-    CT_LIBICONV_V_1_16=y
-    CT_LINUX_V_<%= linux_version.gsub(".", "_") %>=y
-    CT_LOCAL_TARBALLS_DIR="<%= buildpath %>/tarballs"
-    CT_LOCAL_PATCH_DIR="<%= buildpath %>/patches"
-    # CT_LOG_PROGRESS_BAR is not set
-    CT_MPC_V_1_2=y
-    CT_MPFR_V_4_1=y
-    CT_NCURSES_V_6_2=y
-    CT_PATCH_BUNDLED_LOCAL=y
-    CT_PREFIX_DIR="<%= buildpath %>/mnt/install"
     <% if Context.current.debug? %>
     CT_DEBUG_CT=y
     CT_DEBUG_CT_SAVE_STEPS=y
     <% end %>
+    CT_EXPERIMENTAL=y
+    CT_GCC_V_15=y
+    CT_GLIBC_V_2_35=y
+    CT_KERNEL_LINUX=y
+    CT_LIBC_GLIBC=y
+    CT_LINUX_V_5_10=y
+    CT_LOCAL_TARBALLS_DIR="<%= buildpath %>/tarballs"
+    CT_LOCAL_PATCH_DIR="<%= buildpath %>/patches"
+    # CT_LOG_PROGRESS_BAR is not set
+    CT_LOG_TO_FILE=y
+    # CT_LOG_FILE_COMPRESS is not set
+    CT_NCURSES_PATCH_LOCAL=y
+    CT_PARALLEL_JOBS=1
+    CT_PATCH_ORDER="bundled,local"
+    CT_PATCH_BUNDLED_LOCAL=y
+    CT_PATCH_USE_LOCAL=y
+    CT_PREFIX_DIR="<%= buildpath %>/mnt/install"
+    # CT_SAVE_TARBALLS is not set
   EOF
 
   delegate defconfig: :"self.class"
-  delegate glibc_version: :"self.class"
-  delegate linux_version: :"self.class"
 
   class << self
     sig { params(val: String).returns(T.nilable(String)) }
     def defconfig(val = T.unsafe(nil))
       val.nil? ? @defconfig : @defconfig= T.let(val, T.nilable(String))
-    end
-
-    sig { params(val: String).returns(T.nilable(String)) }
-    def glibc_version(val = T.unsafe(nil))
-      val.nil? ? @glibc_version : @glibc_version= T.let(val, T.nilable(String))
-    end
-
-    sig { params(val: String).returns(T.nilable(String)) }
-    def linux_version(val = T.unsafe(nil))
-      val.nil? ? @linux_version : @linux_version= T.let(val, T.nilable(String))
     end
 
     def inherited(formula)
@@ -90,83 +82,75 @@ class Toolchain < Formula
       depends_on "zstd"
 
       resource "binutils" do
-        url "https://ftp.gnu.org/pub/gnu/binutils/binutils-2.37.tar.xz"
-        sha256 "820d9724f020a3e69cb337893a0b63c2db161dadcb0e06fc11dc29eb1e84a32c"
+        url "https://ftpmirror.gnu.org/binutils/binutils-2.45.tar.xz"
+        mirror "https://ftp.gnu.org/pub/gnu/binutils/binutils-2.45.tar.xz"
+        sha256 "c50c0e7f9cb188980e2cc97e4537626b1672441815587f1eab69d2a1bfbef5d2"
       end
 
       resource "gcc" do
-        url "https://ftp.gnu.org/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.xz"
-        sha256 "d08edc536b54c372a1010ff6619dd274c0f1603aa49212ba20f7aa2cda36fa8b"
+        url "https://ftpmirror.gnu.org/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz"
+        mirror "https://ftp.gnu.org/gnu/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz"
+        sha256 "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e"
       end
 
       resource "gettext" do
-        url "https://ftp.gnu.org/pub/gnu/gettext/gettext-0.21.tar.xz"
-        sha256 "d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192"
+        url "https://ftpmirror.gnu.org/gettext/gettext-0.26.tar.xz"
+        mirror "https://ftp.gnu.org/pub/gnu/gettext/gettext-0.26.tar.xz"
+        sha256 "d1fb86e260cfe7da6031f94d2e44c0da55903dbae0a2fa0fae78c91ae1b56f00"
       end
 
-      case glibc_version
-      when "2.12.1"
-        resource "glibc" do
-          url "https://ftp.gnu.org/pub/gnu/glibc/glibc-2.12.1.tar.xz"
-          sha256 "9e633fb278b411a90636cc1c4bf1ffddcc8b0d214f5bacd74bfcdaac81d6035e"
-        end
-      when "2.26"
-        resource "glibc" do
-          url "https://ftp.gnu.org/pub/gnu/glibc/glibc-2.26.tar.xz"
-          sha256 "e54e0a934cd2bc94429be79da5e9385898d2306b9eaf3c92d5a77af96190f6bd"
-        end
-      else
-        raise "unsupported glibc version #{glibc_version}"
+      resource "glibc" do
+        url "https://ftpmirror.gnu.org/glibc/glibc-2.35.tar.xz"
+        mirror "https://ftp.gnu.org/pub/gnu/glibc/glibc-2.35.tar.xz"
+        sha256 "5123732f6b67ccd319305efd399971d58592122bcc2a6518a1bd2510dd0cf52e"
       end
 
       resource "gmp" do
-        url "https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz"
-        sha256 "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"
+        url "https://ftpmirror.gnu.org/gmp/gmp-6.3.0.tar.xz"
+        mirror "https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz"
+        mirror "https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz"
+        sha256 "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"
       end
 
       resource "isl" do
-        url "https://libisl.sourceforge.io/isl-0.24.tar.xz"
-        sha256 "043105cc544f416b48736fff8caf077fb0663a717d06b1113f16e391ac99ebad"
+        url "https://libisl.sourceforge.io/isl-0.27.tar.xz"
+        sha256 "6d8babb59e7b672e8cb7870e874f3f7b813b6e00e6af3f8b04f7579965643d5c"
       end
 
       resource "libiconv" do
-        url "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz"
-        sha256 "e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04"
+        url "https://ftpmirror.gnu.org/libiconv/libiconv-1.18.tar.gz"
+        mirror "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.18.tar.gz"
+        sha256 "3b08f5f4f9b4eb82f151a7040bfd6fe6c6fb922efe4b1659c66ea933276965e8"
       end
 
-      case linux_version
-      when "2.6.32"
-        resource "linux" do
-          url "https://cdn.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-2.6.32.71.tar.xz"
-          sha256 "60a5ffe0206a0ea8997c29ccc595aa7dae55f6cb20c7d92aab88029ca4fef598"
-        end
-      when "3.10"
-        resource "linux" do
-          url "https://cdn.kernel.org/pub/linux/kernel/v3.x/linux-3.10.108.tar.xz"
-          sha256 "3849ea8119517f605f9d53c57dd6c539af8d584c2f1d9031f4f56283af3409a5"
-        end
-      else
-        raise "unsupported linux version #{linux_version}"
+      resource "linux" do
+        url "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.10.240.tar.xz"
+        sha256 "8d88c3977226d666554b75f480d1e6c5f4e4d2acdf2a3462840c6bac88634d13"
       end
 
       resource "mpc" do
-        url "https://www.multiprecision.org/downloads/mpc-1.2.0.tar.gz"
-        sha256 "e90f2d99553a9c19911abdb4305bf8217106a957e3994436428572c8dfe8fda6"
+        url "https://www.multiprecision.org/downloads/mpc-1.3.1.tar.gz"
+        sha256 "ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8"
       end
 
       resource "mpfr" do
-        url "https://www.mpfr.org/mpfr-4.1.0/mpfr-4.1.0.tar.xz"
-        sha256 "0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f"
+        url "https://www.mpfr.org/mpfr-4.2.2/mpfr-4.2.2.tar.xz"
+        sha256 "b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01"
       end
 
       resource "ncurses" do
-        url "https://invisible-mirror.net/archives/ncurses/ncurses-6.2.tar.gz"
-        sha256 "30306e0c76e0f9f1f0de987cf1c82a5c21e1ce6568b9227f7da5b71cbea86c9d"
+        url "https://invisible-mirror.net/archives/ncurses/ncurses-6.5.tar.gz"
+        sha256 "136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6"
       end
 
       resource "zlib" do
-        url "https://downloads.sourceforge.net/project/libpng/zlib/1.2.11/zlib-1.2.11.tar.xz"
-        sha256 "4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066"
+        url "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.xz"
+        sha256 "38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32"
+      end
+
+      resource "zstd" do
+        url "https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz"
+        sha256 "eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3"
       end
     end
   end
@@ -178,46 +162,68 @@ class Toolchain < Formula
       end
     end
 
-    cp_r TAP_PATH/"patches", buildpath/"patches"
+    mkdir buildpath/"patches"
+    cp_r "#{TAP_PATH}/patches/.", buildpath/"patches" if (TAP_PATH/"patches").directory?
 
-    system "hdiutil", "attach", "build.sparseimage", "-mountpoint", "mnt"
+    # The sparseimage is a case-sensitive APFS volume — required by
+    # ct-ng (it asserts the build dir is case-sensitive at startup) and
+    # for the final install dir (Linux kernel headers collide on
+    # case-insensitive FS). Mount with ownership disabled.
+    system "hdiutil", "attach", "build.sparseimage", "-mountpoint", "mnt", "-owners", "off"
 
-    mkdir "mnt/build" do
-      Pathname.new("defconfig").write(ERB.new(DEFCONFIG).result(binding))
-      ENV.delete "CC"
-      ENV.delete "CXX"
-      system "ct-ng", "defconfig"
-      system "ct-ng", "build"
+    begin
+      mkdir "mnt/build" do
+        Pathname.new("defconfig").write(ERB.new(DEFCONFIG).result(binding))
+        ENV.delete "CC"
+        ENV.delete "CXX"
+        ENV.append "LDFLAGS", "-L#{MacOS.sdk_path}/usr/lib"
+        system "ct-ng", "defconfig"
+        begin
+          system "ct-ng", "build"
+        ensure
+          # Preserve the ct-ng build log for debugging on failure. ct-ng
+          # writes it to ${CT_TOP_DIR}/build.log (here: mnt/build) during
+          # the build and only copies it to ${CT_PREFIX_DIR}/build.log on
+          # success. Copy to /tmp so it survives Homebrew's cleanup.
+          log = buildpath/"mnt/build/build.log"
+          cp log, "/tmp/ct-ng-#{name}-build.log" if log.exist?
+        end
+      end
+
+      # Remove the few files that conflict on case-sensitive filesystems.
+      # This is suspect logic, but these are netfilter headers that are
+      # perhaps not that commonly referenced. I think other cross-compiling
+      # toolchains on macOS just throw tar at the problem, which blindly
+      # chooses one of the casing options when untarring.
+      duplicates = Dir.glob("mnt/install/**/*")
+                      .group_by(&:downcase)
+                      .values
+                      .filter { |paths| paths.size > 1 }
+                      .flatten
+      parents = duplicates.map { |path| Pathname.new(path).parent }.uniq
+      chmod "+w", parents
+      rm duplicates
+      chmod "-w", parents
+
+      chmod "+w", "mnt/install"
+      rm_f "mnt/install/build.log"
+      rm_f "mnt/install/build.log.bz2"
+
+      chmod_R "+w", "mnt/install/share"
+      rm_r "mnt/install/share"
+
+      chmod "+w", "mnt/install/lib"
+      chmod_R "+w", "mnt/install/lib/bfd-plugins"
+      rm_r "mnt/install/lib/bfd-plugins"
+      rm ["mnt/install/lib/libcc1.so", "mnt/install/lib/libcc1.0.so"]
+      chmod "-w", "mnt/install/lib"
+      mkdir "mnt/install/bin"
+
+      cp_r "mnt/install/.", prefix
+    ensure
+      # Detach the sparseimage. Best-effort.
+      system "hdiutil", "detach", "#{buildpath}/mnt"
     end
-
-    # Remove the few files that conflict on case-sensitive filesystems. This is
-    # suspect logic, but these are netfilter headers that are perhaps not that
-    # commonly referenced. I think other cross-compiling toolchains on macOS
-    # just throw tar at the problem, which blindly chooses one of the casing
-    # options when untarring.
-    duplicates = Dir.glob("mnt/install/**/*")
-                    .group_by(&:downcase)
-                    .values
-                    .filter { |paths| paths.size > 1 }
-                    .flatten
-    parents = duplicates.map { |path| Pathname.new(path).parent }.uniq
-    chmod "+w", parents
-    rm duplicates
-    chmod "-w", parents
-
-    chmod "+w", "mnt/install"
-    rm "mnt/install/build.log.bz2"
-
-    chmod_R "+w", "mnt/install/share"
-    rm_r "mnt/install/share"
-
-    chmod "+w", "mnt/install/lib"
-    chmod_R "+w", "mnt/install/lib/bfd-plugins"
-    rm_r "mnt/install/lib/bfd-plugins"
-    rm ["mnt/install/lib/libcc1.so", "mnt/install/lib/libcc1.0.so"]
-    chmod "-w", "mnt/install/lib"
-
-    cp_r "mnt/install/.", prefix
   end
 
   test do

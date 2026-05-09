@@ -1,0 +1,108 @@
+Fix ncurses Makefile generation on GitHub Actions macOS runners.
+
+Replace >> append redirects with write-to-temp + concatenate pattern.
+Pre-process subset values via tr to replace + with spaces before
+passing to AWK, bypassing a gawk gsub issue on CI where neither
+gsub("[+]",...) nor gsub(/[+]/,...) replaces + with space.
+
+--- a/configure
++++ b/configure
+@@ -31042,7 +31042,10 @@
+
+ 		$AWK -f "$srcdir/mk-0th.awk" \
+ 			libname="${cf_dir}${LIB_SUFFIX}" subsets="$LIB_SUBSETS" ticlib="$TICS_LIB_SUFFIX" termlib="$TINFO_LIB_SUFFIX" \
+-			"$srcdir/$cf_dir/modules" >>$cf_dir/Makefile
++			"$srcdir/$cf_dir/modules" >$cf_dir/Makefile._append
++		cp $cf_dir/Makefile $cf_dir/Makefile._bak
++		cat $cf_dir/Makefile._bak $cf_dir/Makefile._append >$cf_dir/Makefile
++		rm -f $cf_dir/Makefile._append $cf_dir/Makefile._bak
+
+ 		for cf_subset in $cf_subsets
+ 		do
+@@ -31254,7 +31257,7 @@
+ 				model=$cf_subdir \
+ 				prefix=$cf_prefix \
+ 				suffix=$cf_suffix \
+-				subset=$cf_subset \
++				subset="$(printf '%s' "$cf_subset" | tr '+' ' ')" \
+ 				driver=$cf_cv_term_driver \
+ 				SymLink="$LN_S" \
+ 				TermlibRoot=$TINFO_NAME \
+@@ -31270,7 +31273,10 @@
+ 				depend="$cf_depend" \
+ 				host="$host" \
+ 				libtool_version="$LIBTOOL_VERSION" \
+-				"$srcdir/$cf_dir/modules" >>$cf_dir/Makefile
++				"$srcdir/$cf_dir/modules" >$cf_dir/Makefile._append
++			cp $cf_dir/Makefile $cf_dir/Makefile._bak
++			cat $cf_dir/Makefile._bak $cf_dir/Makefile._append >$cf_dir/Makefile
++			rm -f $cf_dir/Makefile._append $cf_dir/Makefile._bak
+
+ 			cf_suffix="$old_cf_suffix"
+
+@@ -31278,18 +31284,22 @@
+ 			do
+ 				test "$cf_subdir" = "$cf_subdir2" && break
+ 			done
+-			test "${cf_subset}.${cf_subdir2}" != "${cf_subset}.${cf_subdir}" && \
++			test "${cf_subset}.${cf_subdir2}" != "${cf_subset}.${cf_subdir}" && {
+ 			$AWK -f "$srcdir/mk-2nd.awk" \
+ 				name=$cf_dir \
+ 				traces=$LIB_TRACING \
+ 				MODEL=$cf_ITEM \
+ 				model=$cf_subdir \
+-				subset=$cf_subset \
++				subset="$(printf '%s' "$cf_subset" | tr '+' ' ')" \
+ 				srcdir=$srcdir \
+ 				echo=$WITH_ECHO \
+ 				crenames=$cf_cv_prog_CC_c_o \
+ 				cxxrenames=$cf_cv_prog_CXX_c_o \
+-				"$srcdir/$cf_dir/modules" >>$cf_dir/Makefile
++				"$srcdir/$cf_dir/modules" >$cf_dir/Makefile._append
++			cp $cf_dir/Makefile $cf_dir/Makefile._bak
++			cat $cf_dir/Makefile._bak $cf_dir/Makefile._append >$cf_dir/Makefile
++			rm -f $cf_dir/Makefile._append $cf_dir/Makefile._bak
++			}
+ 			cf_subdirs="$cf_subdirs $cf_subdir"
+ 			done
+ 		done
+@@ -31510,26 +31520,35 @@
+
+ 	if test -f "$srcdir/$cf_dir/headers" ; then
+ 		$AWK -f "$srcdir/mk-hdr.awk" \
+-			subset="$LIB_SUBSETS" \
++			subset="$(printf '%s' "$LIB_SUBSETS" | tr '+' ' ')" \
+ 			compat="$WITH_CURSES_H" \
+-			"$srcdir/$cf_dir/headers" >>$cf_dir/Makefile
++			"$srcdir/$cf_dir/headers" >$cf_dir/Makefile._append
++		cp $cf_dir/Makefile $cf_dir/Makefile._bak
++		cat $cf_dir/Makefile._bak $cf_dir/Makefile._append >$cf_dir/Makefile
++		rm -f $cf_dir/Makefile._append $cf_dir/Makefile._bak
+ 	fi
+
+ 	if test -f "$srcdir/$cf_dir/modules" ; then
+ 		if test "$cf_dir" != "c++" ; then
+ 			if test "x$cf_cv_make_PHONY" = xyes ; then
+-				cat >> $cf_dir/Makefile <<-CF_EOF
++				cat >$cf_dir/Makefile._append <<-CF_EOF
+
+ 				.PHONY :	depend
+ CF_EOF
++				cp $cf_dir/Makefile $cf_dir/Makefile._bak
++				cat $cf_dir/Makefile._bak $cf_dir/Makefile._append >$cf_dir/Makefile
++				rm -f $cf_dir/Makefile._append $cf_dir/Makefile._bak
+ 			fi
+
+-			cat >>$cf_dir/Makefile <<"CF_EOF"
++			cat >$cf_dir/Makefile._append <<"CF_EOF"
+ depend : ${AUTO_SRC}
+ 	makedepend -- ${CPPFLAGS} -- ${C_SRC}
+
+ # DO NOT DELETE THIS LINE -- make depend depends on it.
+ CF_EOF
++			cp $cf_dir/Makefile $cf_dir/Makefile._bak
++			cat $cf_dir/Makefile._bak $cf_dir/Makefile._append >$cf_dir/Makefile
++			rm -f $cf_dir/Makefile._append $cf_dir/Makefile._bak
+ 		fi
+ 	fi
+ done
