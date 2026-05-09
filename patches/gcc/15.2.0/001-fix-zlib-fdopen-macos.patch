@@ -1,0 +1,19 @@
+Fix GCC bundled zlib build on macOS with Xcode 16.3+.
+
+Xcode 16.3 (macOS Sequoia) predefines TARGET_OS_MAC via Clang, which
+triggers GCC's bundled zlib to define fdopen as a macro expanding
+to NULL. This conflicts with the system _stdio.h declaration of
+fdopen, causing a compile error. The TARGET_OS_MAC guard was meant for
+Classic Mac OS (pre-OS X), not modern macOS.
+
+--- a/zlib/zutil.h
++++ b/zlib/zutil.h
+@@ -130,7 +130,7 @@
+ #  endif
+ #endif
+
+-#if defined(MACOS) || defined(TARGET_OS_MAC)
++#if defined(MACOS)
+ #  define OS_CODE  7
+ #  ifndef Z_SOLO
+ #    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os

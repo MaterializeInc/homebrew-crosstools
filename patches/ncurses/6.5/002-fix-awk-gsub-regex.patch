@@ -1,0 +1,28 @@
+Fix in_subset() gsub pattern in mk-1st.awk and mk-2nd.awk.
+
+On GitHub Actions macOS runners, gsub("[+]", " ", check) with a string
+pattern silently fails to replace '+' with space. Using a regex literal
+/[+]/ instead works reliably across all awk implementations.
+
+--- a/mk-1st.awk
++++ b/mk-1st.awk
+@@ -265,7 +265,7 @@
+ function in_subset(value) {
+ 		value = " " value " ";
+ 		check = subset;
+-		gsub("[+]", " ", check);
++		gsub(/[+]/, " ", check);
+ 		check = " " check " ";
+ 		return index(check,value);
+ 	}
+--- a/mk-2nd.awk
++++ b/mk-2nd.awk
+@@ -56,7 +56,7 @@
+ function in_subset(value) {
+ 		value = " " value " ";
+ 		check = subset;
+-		gsub("[+]", " ", check);
++		gsub(/[+]/, " ", check);
+ 		check = " " check " ";
+ 		return index(check,value);
+ 	}
