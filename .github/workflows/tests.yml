@@ -6,14 +6,14 @@ on:
   pull_request:
 env:
   HOMEBREW_CHANGE_ARCH_TO_ARM: 1
+  # Disable Homebrew's macOS sandbox. With it on, BSD `mv` and shell
+  # `>>` redirects inside the mounted sparseimage are restricted, which
+  # silently truncates ncurses' configure-time `>>$cf_dir/Makefile`
+  # appends and drops mk-1st.awk's libncurses.a rule.
+  HOMEBREW_NO_SANDBOX: 1
 jobs:
   test-bot:
-    strategy:
-      fail-fast: false
-      matrix:
-        # x86_64 and aarch64 respectively.
-        os: [macos-14-large, macos-14]
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-15
     steps:
       - name: Set up Homebrew
         id: set-up-homebrew
@@ -68,10 +68,17 @@ jobs:
 
       #- run: brew test-bot --only-tap-syntax
 
-      # https://github.com/crosstool-ng/crosstool-ng/issues/1477#issuecomment-998361621
-      - run: brew install --HEAD crosstool-ng
+      # crosstool-ng 1.28.0 (stable, bottled) carries the macOS
+      # case-sensitive-filesystem support that originally needed --HEAD
+      # (https://github.com/crosstool-ng/crosstool-ng/issues/1477).
+      # Use the bottle so test-bot doesn't skip our formulae as having
+      # "unbottled dependencies".
+      - run: HOMEBREW_NO_SANDBOX=1 brew install crosstool-ng
 
-      - run: brew test-bot --only-formulae
+      # Repeat HOMEBREW_NO_SANDBOX=1 inline since test-bot may bypass
+      # the workflow-level env when re-execing for individual formula
+      # installs.
+      - run: HOMEBREW_NO_SANDBOX=1 brew test-bot --only-formulae --skip-dependents
         if: github.event_name == 'pull_request'
 
       - name: Upload bottles as artifact
@@ -80,3 +87,25 @@ jobs:
         with:
           name: bottles
           path: "*.bottle.*"
+
+      # The formula's install method copies the ct-ng build log to
+      # /tmp/ct-ng-<formula>-build.log when the toolchain build fails.
+      # Upload it for debugging.
+      - name: Upload ct-ng build logs
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@main
+        with:
+          name: ct-ng-build-log
+          path: /tmp/ct-ng-*
+          if-no-files-found: ignore
+
+      # `brew test-bot --only-formulae` exits 0 even when individual formulas
+      # fail to build (it only annotates failures). Verify that bottles were
+      # actually produced so the workflow fails when builds fail.
+      - name: Verify bottles were produced
+        if: github.event_name == 'pull_request'
+        run: |
+          if ! ls *.bottle.* >/dev/null 2>&1; then
+            echo "::error::No bottles were produced; one or more formulas failed to build"
+            exit 1
+          fi
