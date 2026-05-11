@@ -80,31 +80,31 @@ class Toolchain < Formula
 
       resource "binutils" do
         url "https://mirror.team-cymru.com/gnu/binutils/binutils-2.45.tar.xz"
-        mirror "https://ftpmirror.gnu.org/binutils/binutils-2.45.tar.xz"
+        mirror "https://mirrors.kernel.org/gnu/binutils/binutils-2.45.tar.xz"
         sha256 "c50c0e7f9cb188980e2cc97e4537626b1672441815587f1eab69d2a1bfbef5d2"
       end
 
       resource "gcc" do
         url "https://mirror.team-cymru.com/gnu/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz"
-        mirror "https://ftpmirror.gnu.org/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz"
+        mirror "https://mirrors.kernel.org/gnu/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz"
         sha256 "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e"
       end
 
       resource "gettext" do
         url "https://mirror.team-cymru.com/gnu/gettext/gettext-0.26.tar.xz"
-        mirror "https://ftpmirror.gnu.org/gettext/gettext-0.26.tar.xz"
+        mirror "https://mirrors.kernel.org/gnu/gettext/gettext-0.26.tar.xz"
         sha256 "d1fb86e260cfe7da6031f94d2e44c0da55903dbae0a2fa0fae78c91ae1b56f00"
       end
 
       resource "glibc" do
         url "https://mirror.team-cymru.com/gnu/glibc/glibc-2.35.tar.xz"
-        mirror "https://ftpmirror.gnu.org/glibc/glibc-2.35.tar.xz"
+        mirror "https://mirrors.kernel.org/gnu/glibc/glibc-2.35.tar.xz"
         sha256 "5123732f6b67ccd319305efd399971d58592122bcc2a6518a1bd2510dd0cf52e"
       end
 
       resource "gmp" do
         url "https://mirror.team-cymru.com/gnu/gmp/gmp-6.3.0.tar.xz"
-        mirror "https://ftpmirror.gnu.org/gmp/gmp-6.3.0.tar.xz"
+        mirror "https://mirrors.kernel.org/gnu/gmp/gmp-6.3.0.tar.xz"
         sha256 "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"
       end
 
@@ -115,7 +115,7 @@ class Toolchain < Formula
 
       resource "libiconv" do
         url "https://mirror.team-cymru.com/gnu/libiconv/libiconv-1.18.tar.gz"
-        mirror "https://ftpmirror.gnu.org/libiconv/libiconv-1.18.tar.gz"
+        mirror "https://mirrors.kernel.org/gnu/libiconv/libiconv-1.18.tar.gz"
         sha256 "3b08f5f4f9b4eb82f151a7040bfd6fe6c6fb922efe4b1659c66ea933276965e8"
       end
 
