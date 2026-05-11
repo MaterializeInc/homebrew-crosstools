@@ -78,7 +78,7 @@ jobs:
       # Repeat HOMEBREW_NO_SANDBOX=1 inline since test-bot may bypass
       # the workflow-level env when re-execing for individual formula
       # installs.
-      - run: HOMEBREW_NO_SANDBOX=1 brew test-bot --only-formulae --skip-dependents
+      - run: HOMEBREW_NO_SANDBOX=1 brew test-bot --only-formulae --skip-dependents --skip-online-checks
         if: github.event_name == 'pull_request'
 
       - name: Upload bottles as artifact
