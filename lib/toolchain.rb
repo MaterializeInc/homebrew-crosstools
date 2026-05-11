@@ -10,8 +10,6 @@ class Toolchain < Formula
     <%= defconfig %>
     CT_ALLOW_BUILD_AS_ROOT=y
     CT_ALLOW_BUILD_AS_ROOT_SURE=y
-    CT_ARCH_ARM=y
-    CT_ARCH_64=y
     CT_BINUTILS_LINKER_LD_GOLD=y
     CT_BINUTILS_GOLD_THREADS=y
     CT_BINUTILS_LD_WRAPPER=y
@@ -38,7 +36,6 @@ class Toolchain < Formula
     CT_LOG_TO_FILE=y
     # CT_LOG_FILE_COMPRESS is not set
     CT_NCURSES_PATCH_LOCAL=y
-    CT_PARALLEL_JOBS=1
     CT_PATCH_ORDER="bundled,local"
     CT_PATCH_BUNDLED_LOCAL=y
     CT_PATCH_USE_LOCAL=y

@@ -18,6 +18,7 @@ brew install MaterializeInc/crosstools/<toolchain>
 Target                        | Binutils | GCC     | Kernel   | Glibc
 ------------------------------|----------|---------|----------|-------
 [`aarch64-unknown-linux-gnu`] | 2.45     | 15.2.0  | 5.10.240 | 2.35
+[`x86_64-unknown-linux-gnu`]  | 2.45     | 15.2.0  | 5.10.240 | 2.35
 
 
 ## Contributing
@@ -26,5 +27,6 @@ PRs that add additional toolchains are encouraged! Use one of the existing
 toolchain files as a guide.
 
 [`aarch64-unknown-linux-gnu`]: Formula/aarch64-unknown-linux-gnu.rb
+[`x86_64-unknown-linux-gnu`]: Formula/x86_64-unknown-linux-gnu.rb
 [Homebrew]: https://brew.sh
 [SergioBenitez/homebrew-osxct]: https://github.com/SergioBenitez/homebrew-osxct
