@@ -105,7 +105,6 @@ class Toolchain < Formula
       resource "gmp" do
         url "https://ftpmirror.gnu.org/gmp/gmp-6.3.0.tar.xz"
         mirror "https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz"
-        mirror "https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz"
         sha256 "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"
       end
 
