@@ -6,6 +6,11 @@ class Aarch64UnknownLinuxGnu < Toolchain
   desc "aarch64 Linux GNU toolchain"
   version "0.2.1"
 
+  bottle do
+    root_url "https://github.com/MaterializeInc/homebrew-crosstools/releases/download/aarch64-unknown-linux-gnu-0.2.1"
+    sha256 cellar: :any_skip_relocation, arm64_sequoia: "7733624805dd4b5c9911ba6178d1d2ed3a6e049674d885000f9826cd75087c2d"
+  end
+
   defconfig <<~EOS
     CT_ARCH_ARM=y
     CT_ARCH_64=y
